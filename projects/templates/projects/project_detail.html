@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block title %}{{ slug|title }} • Perfect Home Studio{% endblock %}
+
+{% block content %}
+<section class="page">
+  <div class="container">
+    <div class="breadcrumbs">
+      <a href="/projects/">← Back to projects</a>
+    </div>
+
+    <div class="page-head">
+      <h1>{{ slug|title }}</h1>
+      <p class="muted">TODO: full article + product blocks here.</p>
+    </div>
+
+    <div class="article">
+      <p class="muted">This is a placeholder. Later we’ll add rich content, images and related products.</p>
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,13 @@
+from django.shortcuts import render
+
+def projects_list(request):
+    # TODO: load from DB
+    posts = [
+        {"slug": "modern-bathroom-ideas", "title": "Modern Bathroom Ideas", "excerpt": "Clean lines, matte black, warm tiles."},
+        {"slug": "small-kitchen-layout", "title": "Small Kitchen Layout", "excerpt": "Make space with smart storage."},
+        {"slug": "tile-selection-guide", "title": "Tile Selection Guide", "excerpt": "How to choose tiles for your home."},
+    ]
+    return render(request, "projects/projects_list.html", {"posts": posts})
+
+def project_detail(request, slug):
+    return render(request, "projects/project_detail.html", {"slug": slug})

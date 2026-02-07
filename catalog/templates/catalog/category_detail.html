@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block title %}{{ category_slug|title }} • Perfect Home Studio{% endblock %}
+
+{% block content %}
+<section class="page">
+  <div class="container">
+    <div class="breadcrumbs">
+      <a href="/{% if section == 'bath' %}bath{% elif section == 'kitchen' %}kitchen{% else %}catalogue{% endif %}/">
+        ← Back to categories
+      </a>
+    </div>
+
+    <div class="page-head">
+      <h1>{{ category_slug|title }}</h1>
+      <p class="muted">TODO: data from DB</p>
+    </div>
+
+    <div class="product-grid">
+      {% for p in products %}
+      <div class="product-card">
+        <div class="product-media">Image</div>
+        <div class="product-body">
+          <div class="product-title">{{ p.title }}</div>
+          <div class="product-meta">
+            <span class="badge"></span>
+            <span class="price">{{ p.price }}</span>
+          </div>
+          <button class="btn btn-primary btn-sm" type="button">Add to cart</button>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}

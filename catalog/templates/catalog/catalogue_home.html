@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }} • Perfect Home Studio{% endblock %}
+
+{% block content %}
+<section class="page">
+  <div class="container">
+    <div class="page-head">
+      <h1>{{ title }}</h1>
+      <p class="muted">{{ subtitle }}</p>
+    </div>
+
+    <div class="category-grid">
+      {% for c in categories %}
+      <a class="category-card" href="{{ c.slug }}/">
+        <div class="category-title">{{ c.title }}</div>
+        <div class="muted">{{ c.desc }}</div>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}
