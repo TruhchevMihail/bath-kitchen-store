@@ -20,47 +20,52 @@
   </div>
 </section>
 
-<section class="section">
-  <div class="container">
-    <h2 class="section-title">Services</h2>
-
-    <div class="cards">
-      <a class="card card-link" href="/bath/">
-        <h3>Bath</h3>
-        <p>Tiles, faucets, sanitary ware, furniture and accessories.</p>
-      </a>
-
-      <a class="card card-link" href="/kitchen/">
-        <h3>Kitchen</h3>
-        <p>Sinks, faucets, worktops, hardware and lighting.</p>
-      </a>
-
-      <a class="card card-link" href="/catalogue/">
-        <h3>Accessories & Parts</h3>
-        <p>Small essentials that complete every bath and kitchen.</p>
-      </a>
-    </div>
-  </div>
-</section>
+{#<section class="section">#}
+{#  <div class="container">#}
+{#    <h2 class="section-title">Services</h2>#}
+{##}
+{#    <div class="cards">#}
+{#      <a class="card card-link" href="/bath/">#}
+{#        <h3>Bath</h3>#}
+{#        <p>Tiles, faucets, sanitary ware, furniture and accessories.</p>#}
+{#      </a>#}
+{##}
+{#      <a class="card card-link" href="/kitchen/">#}
+{#        <h3>Kitchen</h3>#}
+{#        <p>Sinks, faucets, worktops, hardware and lighting.</p>#}
+{#      </a>#}
+{##}
+{#      <a class="card card-link" href="/catalogue/">#}
+{#        <h3>Accessories & Parts</h3>#}
+{#        <p>Small essentials that complete every bath and kitchen.</p>#}
+{#      </a>#}
+{#    </div>#}
+{#  </div>#}
+{#</section>#}
 
 <section class="section">
   <div class="container">
     <div class="section-head">
       <h2 class="section-title">Best Sellers</h2>
-      <p class="section-sub">Top 5 most sold products (TODO: load from DB).</p>
     </div>
 
     <div class="product-grid five">
       {% for p in best_sellers %}
       <div class="product-card">
-        <div class="product-media">Image</div>
+        <div class="product-media">
+            {% if p.image_url %}
+                <img class="product-img" src="{{ p.image_url }}" alt="{{ p.title }}">
+            {% else %}
+                <div class="product-placeholder">No Image</div>
+            {% endif %}
+        </div>
         <div class="product-body">
           <div class="product-title">{{ p.title }}</div>
           <div class="product-meta">
-            <span class="badge">{{ p.tag }}</span>
+            <span class="badge">HOT</span>
             <span class="price">{{ p.price }}</span>
           </div>
-          <button class="btn btn-primary btn-sm" type="button">Add to cart (TODO)</button>
+          <button class="btn btn-primary btn-sm" type="button">Add to cart</button>
         </div>
       </div>
       {% endfor %}
@@ -72,20 +77,24 @@
   <div class="container">
     <div class="section-head">
       <h2 class="section-title">New Arrivals</h2>
-      <p class="section-sub">Last 5 added products (TODO: load from DB).</p>
     </div>
-
     <div class="product-grid five">
       {% for p in latest_products %}
       <div class="product-card">
-        <div class="product-media">Image</div>
+        <div class="product-media">
+            {% if p.image_url %}
+                <img class="product-img" src="{{ p.image_url }}" alt="{{ p.title }}">
+            {% else %}
+                <div class="product-placeholder">No Image</div>
+            {% endif %}
+        </div>
         <div class="product-body">
           <div class="product-title">{{ p.title }}</div>
           <div class="product-meta">
-            <span class="badge badge-soft">{{ p.tag }}</span>
+            <span class="badge badge-soft">NEW</span>
             <span class="price">{{ p.price }}</span>
           </div>
-          <button class="btn btn-primary btn-sm" type="button">Add to cart (TODO)</button>
+          <button class="btn btn-primary btn-sm" type="button">Add to cart</button>
         </div>
       </div>
       {% endfor %}

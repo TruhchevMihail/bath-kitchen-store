@@ -1,22 +1,13 @@
 from django.shortcuts import render
+from catalog.models import Product
+
 
 def home(request):
-    # TODO: replace with real queries after models exist
-    best_sellers = [
-        {"title": "Best Seller #1", "price": "TODO", "tag": "TOP"},
-        {"title": "Best Seller #2", "price": "TODO", "tag": "TOP"},
-        {"title": "Best Seller #3", "price": "TODO", "tag": "TOP"},
-        {"title": "Best Seller #4", "price": "TODO", "tag": "TOP"},
-        {"title": "Best Seller #5", "price": "TODO", "tag": "TOP"},
-    ]
+    best_sellers = Product.objects.order_by(
+        '-sold_count',
+        '-created_at',)[:5]
 
-    latest_products = [
-        {"title": "New Product #1", "price": "TODO", "tag": "NEW"},
-        {"title": "New Product #2", "price": "TODO", "tag": "NEW"},
-        {"title": "New Product #3", "price": "TODO", "tag": "NEW"},
-        {"title": "New Product #4", "price": "TODO", "tag": "NEW"},
-        {"title": "New Product #5", "price": "TODO", "tag": "NEW"},
-    ]
+    latest_products = Product.objects.order_by('-created_at')[:5]
 
     return render(request, "core/home.html", {
         "best_sellers": best_sellers,
