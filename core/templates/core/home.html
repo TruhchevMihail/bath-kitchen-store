@@ -6,46 +6,41 @@
   <div class="container hero-inner">
     <div>
       <h1>Designed for Comfort. Built to Last.</h1>
-      <p>At Perfect Home Studio, we offer premium bathroom and kitchen
-          products selected for their timeless design, superior quality,
-          and long-term reliability.</p>
+      <p>
+        At Perfect Home Studio, we offer premium bathroom and kitchen
+        products selected for their timeless design, superior quality,
+        and long-term reliability.
+      </p>
       <div class="hero-actions">
-        <a class="btn btn-primary" href="{% url 'brand_list' %}">Browse Brands</a>
+        <a class="btn btn-primary" href="{% url 'bath_home' %}">Browse Bath</a>
+        <a class="btn btn-primary" href="{% url 'kitchen_home' %}">Browse Kitchen</a>
+        <a class="btn btn-primary" href="{% url 'brand_list' %}">Browse Catalogue</a>
         <a class="btn btn-ghost" href="{% url 'projects:projects_list' %}">View Projects</a>
       </div>
     </div>
+    <div class="hero-card hero-rotator">
 
-    <div class="hero-card">
-      <p class="card-title">Fast & Reliable Delivery</p>
-      <p class="card-sub">Trusted brands • Competitive prices • Easy returns
-            Shop with confidence and receive your products quickly,
-          without compromising on quality.</p>
-    </div>
+      <div class="hero-rotator-item">
+        <p class="card-title">Fast & Reliable Delivery</p>
+        <p class="card-sub">Trusted brands • Competitive prices • Easy returns. Receive your products quickly, without compromising on quality.</p>
+      </div>
+
+      <div class="hero-rotator-item">
+        <p class="card-title">Premium Brands Only</p>
+        <p class="card-sub">Curated collections from proven manufacturers. Long-lasting materials, clean design, and excellent warranty support.</p>
+      </div>
+
+      <div class="hero-rotator-item">
+        <p class="card-title">Expert Support</p>
+        <p class="card-sub">Need help choosing? We guide you to the right solution for your space — bath or kitchen — with confidence.</p>
+      </div>
+
+      <div class="hero-rotator-dots">
+        <span></span><span></span><span></span>
+  </div>
+</div>
   </div>
 </section>
-
-{#<section class="section">#}
-{#  <div class="container">#}
-{#    <h2 class="section-title">Services</h2>#}
-{##}
-{#    <div class="cards">#}
-{#      <a class="card card-link" href="/bath/">#}
-{#        <h3>Bath</h3>#}
-{#        <p>Tiles, faucets, sanitary ware, furniture and accessories.</p>#}
-{#      </a>#}
-{##}
-{#      <a class="card card-link" href="/kitchen/">#}
-{#        <h3>Kitchen</h3>#}
-{#        <p>Sinks, faucets, worktops, hardware and lighting.</p>#}
-{#      </a>#}
-{##}
-{#      <a class="card card-link" href="/catalogue/">#}
-{#        <h3>Accessories & Parts</h3>#}
-{#        <p>Small essentials that complete every bath and kitchen.</p>#}
-{#      </a>#}
-{#    </div>#}
-{#  </div>#}
-{#</section>#}
 
 <section class="section">
   <div class="container">
@@ -56,21 +51,41 @@
     <div class="product-grid five">
       {% for p in best_sellers %}
       <div class="product-card">
-        <div class="product-media">
-            {% if p.image_url %}
-                <img class="product-img" src="{{ p.image_url }}" alt="{{ p.title }}">
+
+        <a class="product-link" href="{% url 'product_detail' p.slug %}">
+          <div class="product-media">
+            {% if p.image %}
+              <img class="product-img" src="{{ p.image.url }}" alt="{{ p.title }}">
             {% else %}
-                <div class="product-placeholder">No Image</div>
+              <div class="media-placeholder">No Image</div>
             {% endif %}
-        </div>
-        <div class="product-body">
-          <div class="product-title">{{ p.title }}</div>
-          <div class="product-meta">
-            <span class="badge">HOT</span>
-            <span class="price">{{ p.price }}</span>
           </div>
+
+          <div class="product-body">
+            <div class="product-title">{{ p.title }}</div>
+
+            <div class="product-bottom">
+              <div class="product-left">
+                <span class="badge">HOT</span>
+              </div>
+
+              <div class="product-center">
+                {% if p.brand.logo %}
+                  <img src="{{ p.brand.logo.url }}" class="brand-mini" alt="{{ p.brand.name }}">
+                {% endif %}
+              </div>
+
+              <div class="product-right">
+                <span class="price">{{ p.price }}</span>
+              </div>
+            </div>
+          </div>
+        </a>
+
+        <div class="product-actions">
           <button class="btn btn-primary btn-sm" type="button">Add to cart</button>
         </div>
+
       </div>
       {% endfor %}
     </div>
@@ -82,24 +97,45 @@
     <div class="section-head">
       <h2 class="section-title">New Arrivals</h2>
     </div>
+
     <div class="product-grid five">
       {% for p in latest_products %}
       <div class="product-card">
-        <div class="product-media">
-            {% if p.image_url %}
-                <img class="product-img" src="{{ p.image_url }}" alt="{{ p.title }}">
+
+        <a class="product-link" href="{% url 'product_detail' p.slug %}">
+          <div class="product-media">
+            {% if p.image %}
+              <img class="product-img" src="{{ p.image.url }}" alt="{{ p.title }}">
             {% else %}
-                <div class="product-placeholder">No Image</div>
+              <div class="media-placeholder">No Image</div>
             {% endif %}
-        </div>
-        <div class="product-body">
-          <div class="product-title">{{ p.title }}</div>
-          <div class="product-meta">
-            <span class="badge badge-soft">NEW</span>
-            <span class="price">{{ p.price }}</span>
           </div>
+
+          <div class="product-body">
+            <div class="product-title">{{ p.title }}</div>
+
+            <div class="product-bottom">
+              <div class="product-left">
+                <span class="badge badge-soft">NEW</span>
+              </div>
+
+              <div class="product-center">
+                {% if p.brand.logo %}
+                  <img src="{{ p.brand.logo.url }}" class="brand-mini" alt="{{ p.brand.name }}">
+                {% endif %}
+              </div>
+
+              <div class="product-right">
+                <span class="price">{{ p.price }}</span>
+              </div>
+            </div>
+          </div>
+        </a>
+
+        <div class="product-actions">
           <button class="btn btn-primary btn-sm" type="button">Add to cart</button>
         </div>
+
       </div>
       {% endfor %}
     </div>

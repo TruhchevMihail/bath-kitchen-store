@@ -72,3 +72,13 @@ def brand_list(request):
         "brands": brands,
     }
     return render(request, "catalog/brand_list.html", context)
+
+
+def product_detail(request, slug):
+    product = get_object_or_404(Product, slug=slug)
+
+    context = {
+        'product': product,
+    }
+
+    return render(request, 'catalog/product_detail.html', context)

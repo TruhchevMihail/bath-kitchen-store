@@ -1,62 +1,41 @@
 {% extends "base.html" %}
-{% block title %}{{ project.title }} • Perfect Home Studio{% endblock %}
+{% block title %}{{ project.title }}{% endblock %}
 
 {% block content %}
-<section class="page">
-  <div class="container">
+<div class="container">
+  <h1>{{ project.title }}</h1>
+  <p class="badge">{{ project.get_section_display }}</p>
+  <p>{{ project.excerpt }}</p>
 
-    <div class="breadcrumbs">
-      <a href="{% url 'projects:projects_list' %}">← Back to projects</a>
-    </div>
+  {% if project.cover_image_url %}
+    <img src="{{ project.cover_image_url }}" alt="{{ project.title }}" style="width:100%; max-height:360px; object-fit:cover; border-radius:14px;">
+  {% endif %}
 
-    <div class="page-head">
-      <h1>{{ project.title }}</h1>
-      <p class="muted">{{ project.get_section_display }}</p>
-      {% if project.short_description %}
-        <p class="muted">{{ project.short_description }}</p>
-      {% endif %}
-    </div>
+  <div class="content">
+    {{ project.content|linebreaks }}
+  </div>
 
-    <div class="hero">
-      {% if project.cover_image %}
-        <img class="hero-img" src="{{ project.cover_image.url }}" alt="{{ project.title }}">
-      {% else %}
-        <div class="hero-placeholder">Cover image</div>
-      {% endif %}
-    </div>
+  <h2>Related products</h2>
+  <p>Total: {{ project.total_price }}</p>
 
-    {% if project.content %}
-      <article class="prose">
-        {{ project.content|linebreaks }}
-      </article>
-    {% endif %}
-
-    {% if project.related_products.all %}
-      <div class="section-split">
-        <h2>Related products</h2>
-        <div class="product-grid">
-          {% for p in project.related_products.all %}
-            <div class="product-card">
-              <div class="product-media">
-                {% if p.image %}
-                  <img src="{{ p.image.url }}" alt="{{ p.title }}">
-                {% else %}
-                  <div class="media-placeholder">Product</div>
-                {% endif %}
-              </div>
-              <div class="product-body">
-                <div class="product-title">{{ p.title }}</div>
-                <div class="muted">{{ p.brand.name }} • {{ p.category.get_section_display }}</div>
-                <div class="product-meta">
-                  <span class="price">{{ p.price }}</span>
-                </div>
-              </div>
-            </div>
-          {% endfor %}
+  <div class="product-grid">
+    {% for p in project.related_products.all %}
+      <div class="product-card">
+        <div class="product-title">{{ p.title }}</div>
+        <div class="product-meta">
+          <span class="badge">{{ p.brand.name }}</span>
+          <span class="price">{{ p.price }}</span>
         </div>
       </div>
-    {% endif %}
-
+    {% empty %}
+      <p>No related products yet.</p>
+    {% endfor %}
   </div>
-</section>
+
+  <div style="margin-top:16px; display:flex; gap:10px;">
+    <a class="btn btn-primary" href="{% url 'projects:project_edit' project.slug %}">Edit</a>
+    <a class="btn btn-danger" href="{% url 'projects:project_delete' project.slug %}">Delete</a>
+    <a class="btn btn-ghost" href="{% url 'projects:projects_list' %}">Back</a>
+  </div>
+</div>
 {% endblock %}

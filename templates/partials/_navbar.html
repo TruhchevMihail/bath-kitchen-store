@@ -1,21 +1,23 @@
 {% load static %}
 
-
 <header class="site-header">
-  <div class="container header-inner">
+  <div class="header-inner">
     <a class="brand" href="/">Perfect Home Studio</a>
 
     <nav class="menu" aria-label="Main navigation">
+        <a class="menu-link" href="/">Home</a>
         <a class="menu-link" href="{% url 'bath_home' %}">Bath</a>
         <a class="menu-link" href="{% url 'kitchen_home' %}">Kitchen</a>
-        <a class="menu-link" href="{% url 'brand_list' %}">Brands</a>
+        <a class="menu-link" href="{% url 'brand_list' %}">Catalogue</a>
         <a class="menu-link" href="{% url 'projects:projects_list' %}">Projects</a>
     </nav>
+
     <a class="cart" href="/cart/" aria-label="Cart">
-        <span class="cart-icon">🛒</span>
-        <span class="cart-badge">0</span>
+      <span class="cart-icon">🛒</span>
+      <span class="cart-badge">0</span>
     </a>
-    <form class="search" role="search" action="#" method="get">
+
+    <form class="search" role="search" action="search" method="get">
       <input class="search-input" type="search" name="q" placeholder="Search..." aria-label="Search">
       <button class="search-btn" type="submit">Search</button>
     </form>

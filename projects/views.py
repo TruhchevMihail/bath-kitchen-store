@@ -1,26 +1,58 @@
-from django.shortcuts import render
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.urls import reverse_lazy
+from django.views.generic import (
+    ListView, DetailView, CreateView, UpdateView, DeleteView
+)
 
-from projects.models import ProjectPost
+from .models import ProjectPost
+from .forms import ProjectPostCreateForm, ProjectPostUpdateForm
 
 
-def projects_list(request):
-    project = ProjectPost.objects.all()
+class ProjectBaseMixin:
+    model = ProjectPost
+    context_object_name = "project"
+    paginate_by = 6
 
-    sections = request.GET.get('section')
-    if sections in (ProjectPost.BATH, ProjectPost.KITCHEN):
-        project = project.filter(section=sections)
+class ProjectListView(ProjectBaseMixin, ListView):
+    template_name = "projects/projects_list.html"
+    context_object_name = "projects"
 
-    context = {
-        'projects': project,
-        'section': sections,
-    }
+    def get_queryset(self):
+        qs = super().get_queryset()
+        section = self.request.GET.get("section")
+        valid_sections = [ProjectPost.BATH, ProjectPost.KITCHEN]
 
-    return render(request, 'projects/projects_list.html', context)
+        if section in valid_sections:
+            return qs.filter(section=section)
+        return qs
 
-def project_detail(request, slug):
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx["current_section"] = self.request.GET.get("section")
+        return ctx
 
-    context = {
-        "slug": slug
-    }
 
-    return render(request, "projects/project_detail.html", context)
+class ProjectDetailView(ProjectBaseMixin, DetailView):
+    template_name = "projects/project_detail.html"
+
+
+class ProjectCreateView(LoginRequiredMixin, ProjectBaseMixin, CreateView):
+    form_class = ProjectPostCreateForm
+    template_name = "projects/project_create.html"
+
+
+class ProjectUpdateView(LoginRequiredMixin, ProjectBaseMixin, UpdateView):
+    form_class = ProjectPostUpdateForm
+    template_name = "projects/project_edit.html"
+
+    def get_initial(self):
+        initial = super().get_initial()
+        initial["slug"] = self.object.slug
+        return initial
+
+
+class ProjectDeleteView(LoginRequiredMixin, ProjectBaseMixin, DeleteView):
+    template_name = "projects/project_delete.html"
+    success_url = reverse_lazy("projects:projects_list")
+
+

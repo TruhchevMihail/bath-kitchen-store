@@ -22,9 +22,9 @@
           </div>
           <div class="card-body">
             <div class="card-title">{{ c.title }}</div>
-            {% if c.description %}
-              <div class="muted clamp-2">{{ c.description }}</div>
-            {% endif %}
+              <div class="brand-count muted">
+                {{ c.products.count }} products
+            </div>
           </div>
         </a>
       {% empty %}

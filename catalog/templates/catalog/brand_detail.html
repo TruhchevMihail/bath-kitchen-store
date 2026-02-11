@@ -1,51 +1,49 @@
-{% extends 'base.html' %}
-{% block title %}{{ brand.name }} • Perfect Home Studio{% endblock %}
+<div class="product-grid">
+  {% for p in products %}
+    <div class="product-card">
 
-{% block content %}
-<section class="page">
-  <div class="container">
-    <div class="breadcrumbs">
-      <a href="{% url 'brand_list' %}">← Back to brands</a>
-    </div>
+      <div class="product-media">
 
-    <div class="page-head page-head--split">
-      <div>
-        <h1>{{ brand.name }}</h1>
-        <p class="muted">All products from this brand (bath + kitchen)</p>
+        <div class="product-badges">
+          {% if p.is_promo %}
+            <span class="badge">Promo</span>
+          {% endif %}
+          {% if p.is_featured %}
+            <span class="badge badge-soft">Featured</span>
+          {% endif %}
+        </div>
+
+        {% if p.image %}
+          <img src="{{ p.image.url }}" alt="{{ p.title }}">
+        {% else %}
+          <div class="media-placeholder">Product</div>
+        {% endif %}
       </div>
-      {% if brand.logo %}
-        <img class="brand-logo" src="{{ brand.logo.url }}" alt="{{ brand.name }}">
-      {% endif %}
-    </div>
 
-    <div class="product-grid">
-      {% for p in products %}
-        <div class="product-card">
-          <div class="product-media">
-            {% if p.image %}
-              <img src="{{ p.image.url }}" alt="{{ p.title }}">
-            {% else %}
-              <div class="media-placeholder">Product</div>
-            {% endif %}
-          </div>
-          <div class="product-body">
-            <div class="product-title">{{ p.title }}</div>
-            <div class="muted">{{ p.category.get_section_display }} • {{ p.category.title }}</div>
-            <div class="product-meta">
-              {% if p.is_promo %}<span class="badge">Promo</span>{% endif %}
-              {% if p.is_featured %}<span class="badge badge--alt">Featured</span>{% endif %}
-              <span class="price">{{ p.price }}</span>
-            </div>
-            <button class="btn btn-primary btn-sm" type="button">Add to cart</button>
-          </div>
+      <div class="product-body">
+
+        <div class="product-title clamp-2">
+          {{ p.title }}
         </div>
-      {% empty %}
-        <div class="empty">
-          <h3>No products for this brand yet</h3>
-          <p class="muted">Add products from the admin panel.</p>
+
+        <div class="product-sub muted">
+          {{ p.category.get_section_display }} • {{ p.category.title }}
         </div>
-      {% endfor %}
+
+        <div class="product-price">
+          {{ p.price }}
+        </div>
+
+        <button class="btn btn-primary btn-sm">
+          Add to cart
+        </button>
+
+      </div>
     </div>
-  </div>
-</section>
-{% endblock %}
+  {% empty %}
+    <div class="empty">
+      <h3>No products for this brand yet</h3>
+      <p class="muted">Add products from the admin panel.</p>
+    </div>
+  {% endfor %}
+</div>

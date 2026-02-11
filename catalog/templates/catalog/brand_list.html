@@ -5,7 +5,7 @@
 <section class="page">
   <div class="container">
     <div class="page-head">
-      <h1>Brands</h1>
+      <h1>Catalogue</h1>
       <p class="muted">Browse all brands</p>
     </div>
 
@@ -19,8 +19,11 @@
               <div class="media-placeholder">Brand</div>
             {% endif %}
           </div>
-          <div class="card-body">
-            <div class="card-title">{{ b.name }}</div>
+          <div class="card-body brand-card-body">
+            <div class="card-title brand-title">{{ b.name }}</div>
+            <div class="brand-count muted">
+                {{ b.products.count }} products
+            </div>
           </div>
         </a>
       {% empty %}
