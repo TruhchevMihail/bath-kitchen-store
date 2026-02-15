@@ -9,248 +9,193 @@ from .forms import ProductCreateForm, ProductUpdateForm, BrandCreateForm, BrandU
 from .models import Category, Product , Brand
 
 
-def bath_home(request):
-    categories = Category.objects.filter(section=Category.BATH).order_by('title')
+class SectionHomeView(ListView):
+    model = Product
+    template_name = 'catalog/section_home.html'
+    context_object_name = 'products'
+    paginate_by = 12
 
-    sort = request.GET.get('sort', 'newest')
-    valid_sorts = {
-        'price': 'price',
-        '-price': '-price',
-        'title': 'title',
-        '-title': '-title',
-        'newest': '-created_at',
-        'oldest': 'created_at',
-    }
-    db_sort = valid_sorts.get(sort, '-created_at')
+    def get_section(self):
+        return self.kwargs.get('section')
 
-    products_list = (
-        Product.objects
-        .filter(category__section=Category.BATH)
-        .select_related('brand', 'category')
-    )
+    def get_queryset(self):
+        section = self.get_section()
+        qs = Product.objects.filter(category__section=section).select_related('brand', 'category')
 
-    q = (request.GET.get('q') or '').strip()
-    if q:
-        if len(q) < 2:
-            products_list = products_list.none()
-        else:
-            products_list = products_list.filter(
+        q = (self.request.GET.get('q') or '').strip()
+        if q:
+            if len(q) < 2:
+                return qs.none()
+            qs = qs.filter(
                 models.Q(title__icontains=q) |
                 models.Q(unique_id__icontains=q) |
                 models.Q(brand__name__icontains=q) |
                 models.Q(category__title__icontains=q)
             ).distinct()
 
-    products_list = products_list.order_by(db_sort)
+        sort = self.request.GET.get('sort', 'newest')
+        valid_sorts = {
+            'price': 'price',
+            '-price': '-price',
+            'title': 'title',
+            '-title': '-title',
+            'newest': '-created_at',
+            'oldest': 'created_at',
+        }
+        db_sort = valid_sorts.get(sort, '-created_at')
+        return qs.order_by(db_sort)
 
-    paginator = Paginator(products_list, 12)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        section = self.get_section()
+        categories = Category.objects.filter(section=section).order_by('title')
 
-    context = {
-        'section': 'bath',
-        'title': 'Bath',
-        'subtitle': 'Our Bathroom Products',
-        'categories': categories,
-        'products': page_obj,
-        'page_obj': page_obj,
-        'is_paginated': page_obj.has_other_pages(),
-        'current_sort': sort,
-    }
-
-    return render(request, 'catalog/section_home.html', context)
-
-
-def kitchen_home(request):
-    categories = Category.objects.filter(section=Category.KITCHEN).order_by('title')
-
-    sort = request.GET.get('sort', 'newest')
-    valid_sorts = {
-        'price': 'price',
-        '-price': '-price',
-        'title': 'title',
-        '-title': '-title',
-        'newest': '-created_at',
-        'oldest': 'created_at',
-    }
-    db_sort = valid_sorts.get(sort, '-created_at')
-
-    products_list = (
-        Product.objects
-        .filter(category__section=Category.KITCHEN)
-        .select_related('brand', 'category')
-    )
-
-    q = (request.GET.get('q') or '').strip()
-    if q:
-        if len(q) < 2:
-            products_list = products_list.none()
+        if section == Category.BATH:
+            title = 'Bath'
+            subtitle = 'Our Bathroom Products'
         else:
-            products_list = products_list.filter(
-                models.Q(title__icontains=q) |
-                models.Q(unique_id__icontains=q) |
-                models.Q(brand__name__icontains=q) |
-                models.Q(category__title__icontains=q)
-            ).distinct()
+            title = 'Kitchen'
+            subtitle = 'Our Kitchen Products'
 
-    products_list = products_list.order_by(db_sort)
-
-    paginator = Paginator(products_list, 12)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
-
-    context = {
-        'section': 'kitchen',
-        'title': 'Kitchen',
-        'subtitle': 'Our Kitchen Products',
-        'categories': categories,
-        'products': page_obj,
-        'page_obj': page_obj,
-        'is_paginated': page_obj.has_other_pages(),
-        'current_sort': sort,
-    }
-
-    return render(request, 'catalog/section_home.html', context)
+        context.update({
+            'section': section,
+            'title': title,
+            'subtitle': subtitle,
+            'categories': categories,
+            'current_sort': self.request.GET.get('sort', 'newest'),
+        })
+        return context
 
 
-def category_products(request, section, category_slug):
-    category = get_object_or_404(Category, slug=category_slug, section=section)
+class CategoryProductsView(ListView):
+    model = Product
+    template_name = 'catalog/category_detail.html'
+    context_object_name = 'products'
+    paginate_by = 12
 
-    sort = request.GET.get('sort', 'newest')
-    valid_sorts = {
-        'price': 'price',
-        '-price': '-price',
-        'title': 'title',
-        '-title': '-title',
-        'newest': '-created_at',
-        'oldest': 'created_at',
-    }
-    db_sort = valid_sorts.get(sort, '-created_at')
+    def dispatch(self, request, *args, **kwargs):
+        self.section = kwargs.get('section')
+        self.category = get_object_or_404(Category, slug=kwargs.get('category_slug'), section=self.section)
+        return super().dispatch(request, *args, **kwargs)
 
-    products_list = (
-        Product.objects
-        .filter(category=category)
-        .select_related('brand', 'category')
-    )
+    def get_queryset(self):
+        qs = Product.objects.filter(category=self.category).select_related('brand', 'category')
 
-    q = (request.GET.get('q') or '').strip()
-    if q:
-        if len(q) < 2:
-            products_list = products_list.none()
-        else:
-            products_list = products_list.filter(
+        q = (self.request.GET.get('q') or '').strip()
+        if q:
+            if len(q) < 2:
+                return qs.none()
+            qs = qs.filter(
                 models.Q(title__icontains=q) |
                 models.Q(unique_id__icontains=q) |
                 models.Q(brand__name__icontains=q)
             ).distinct()
 
-    products_list = products_list.order_by(db_sort)
+        sort = self.request.GET.get('sort', 'newest')
+        valid_sorts = {
+            'price': 'price',
+            '-price': '-price',
+            'title': 'title',
+            '-title': '-title',
+            'newest': '-created_at',
+            'oldest': 'created_at',
+        }
+        db_sort = valid_sorts.get(sort, '-created_at')
+        return qs.order_by(db_sort)
 
-    paginator = Paginator(products_list, 12)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
-
-    context = {
-        'section': section,
-        'category': category,
-        'products': page_obj,  
-        'page_obj': page_obj,  
-        'is_paginated': page_obj.has_other_pages(),
-        'current_sort': sort,
-    }
-
-    return render(request, 'catalog/category_detail.html', context)
-
-
-def brand_detail(request, brand_slug):
-    brand = get_object_or_404(Brand, slug=brand_slug)
-
-    sort = request.GET.get('sort', 'newest')
-    valid_sorts = {
-        'price': 'price',
-        '-price': '-price',
-        'title': 'title',
-        '-title': '-title',
-        'newest': '-created_at',
-        'oldest': 'created_at',
-    }
-    db_sort = valid_sorts.get(sort, '-created_at')
-
-    products_list = (
-        Product.objects
-        .filter(brand=brand)
-        .select_related('brand', 'category')
-    )
-
-    q = (request.GET.get('q') or '').strip()
-    if q:
-        if len(q) < 2:
-            products_list = products_list.none()
-        else:
-            products_list = products_list.filter(
-                models.Q(title__icontains=q) |
-                models.Q(unique_id__icontains=q) |
-                models.Q(category__title__icontains=q)
-            ).distinct()
-
-    products_list = products_list.order_by(db_sort)
-
-    paginator = Paginator(products_list, 12)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
-
-    context = {
-        'brand': brand,
-        'products': page_obj,
-        'page_obj': page_obj,
-        'is_paginated': page_obj.has_other_pages(),
-        'current_sort': sort,
-    }
-
-    return render(request, "catalog/brand_detail.html", context)
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update({
+            'section': self.section,
+            'category': self.category,
+            'current_sort': self.request.GET.get('sort', 'newest'),
+        })
+        return context
 
 
-def brand_list(request):
-    sort = request.GET.get('sort', 'name')
-    valid_sorts = {
-        'name': 'name',
-        '-name': '-name',
-        'newest': '-id',
-        'oldest': 'id',
-    }
-    db_sort = valid_sorts.get(sort, 'name')
-    brands_list = Brand.objects.all()
+class BrandListView(ListView):
+    model = Brand
+    template_name = 'catalog/brand_list.html'
+    context_object_name = 'brands'
+    paginate_by = 12
 
-    q = (request.GET.get('q') or '').strip()
-    if q:
-        if len(q) < 2:
-            brands_list = brands_list.none()
-        else:
-            brands_list = brands_list.filter(name__icontains=q)
+    def get_queryset(self):
+        qs = Brand.objects.all()
+        q = (self.request.GET.get('q') or '').strip()
+        if q:
+            if len(q) < 2:
+                return qs.none()
+            qs = qs.filter(name__icontains=q)
 
-    brands_list = brands_list.order_by(db_sort)
+        sort = self.request.GET.get('sort', 'name')
+        valid_sorts = {
+            'name': 'name',
+            '-name': '-name',
+            'newest': '-id',
+            'oldest': 'id',
+        }
+        db_sort = valid_sorts.get(sort, 'name')
+        return qs.order_by(db_sort)
 
-    paginator = Paginator(brands_list, 12)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
-
-    context = {
-        "brands": page_obj,
-        "page_obj": page_obj,
-        "is_paginated": page_obj.has_other_pages(),
-        "current_sort": sort,
-    }
-    return render(request, "catalog/brand_list.html", context)
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['current_sort'] = self.request.GET.get('sort', 'name')
+        return context
 
 
-def product_detail(request, slug):
-    product = get_object_or_404(Product, slug=slug)
+class BrandDetailView(DetailView):
+    model = Brand
+    template_name = 'catalog/brand_detail.html'
+    slug_url_kwarg = 'brand_slug'
+    context_object_name = 'brand'
 
-    context = {
-        'product': product,
-    }
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        brand = self.object
 
-    return render(request, 'catalog/product_detail.html', context)
+        products_list = Product.objects.filter(brand=brand).select_related('brand', 'category')
+
+        q = (self.request.GET.get('q') or '').strip()
+        if q:
+            if len(q) < 2:
+                products_list = products_list.none()
+            else:
+                products_list = products_list.filter(
+                    models.Q(title__icontains=q) |
+                    models.Q(unique_id__icontains=q) |
+                    models.Q(category__title__icontains=q)
+                ).distinct()
+
+        sort = self.request.GET.get('sort', 'newest')
+        valid_sorts = {
+            'price': 'price',
+            '-price': '-price',
+            'title': 'title',
+            '-title': '-title',
+            'newest': '-created_at',
+            'oldest': 'created_at',
+        }
+        db_sort = valid_sorts.get(sort, '-created_at')
+
+        paginator = Paginator(products_list.order_by(db_sort), 12)
+        page_number = self.request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+
+        context.update({
+            'products': page_obj,
+            'page_obj': page_obj,
+            'is_paginated': page_obj.has_other_pages(),
+            'current_sort': sort,
+        })
+        return context
+
+
+class ProductDetailView(DetailView):
+    model = Product
+    template_name = 'catalog/product_detail.html'
+    slug_url_kwarg = 'slug'
+    context_object_name = 'product'
+
 
 class ProductListView(ListView):
     model = Product

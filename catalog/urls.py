@@ -1,15 +1,14 @@
 from django.urls import path
 from . import views
-from .views import product_detail
 
 bath_patterns = [
-    path("bath/", views.bath_home, name="bath_home"),
-    path("bath/<slug:category_slug>/", views.category_products, {"section": "bath"}, name="bath_category"),
+    path("bath/", views.SectionHomeView.as_view(), {'section': 'bath'}, name="bath_home"),
+    path("bath/<slug:category_slug>/", views.CategoryProductsView.as_view(), {'section': 'bath'}, name="bath_category"),
 ]
 
 kitchen_patterns = [
-    path("kitchen/", views.kitchen_home, name="kitchen_home"),
-    path("kitchen/<slug:category_slug>/", views.category_products, {"section": "kitchen"}, name="kitchen_category"),
+    path("kitchen/", views.SectionHomeView.as_view(), {'section': 'kitchen'}, name="kitchen_home"),
+    path("kitchen/<slug:category_slug>/", views.CategoryProductsView.as_view(), {'section': 'kitchen'}, name="kitchen_category"),
 ]
 
 category_patterns = [
@@ -25,15 +24,15 @@ product_patterns = [
     path("products/create/", views.ProductCreateView.as_view(), name="product_create"),
     path("products/<slug:slug>/edit/", views.ProductUpdateView.as_view(), name="product_edit"),
     path("products/<slug:slug>/delete/", views.ProductDeleteView.as_view(), name="product_delete"),
-    path("products/<slug:slug>/", product_detail, name="product_detail"),
+    path("products/<slug:slug>/", views.ProductDetailView.as_view(), name="product_detail"),
 ]
 
 catalogue_patterns = [
-    path("catalogue/", views.brand_list, name="brand_list"),
+    path("catalogue/", views.BrandListView.as_view(), name="brand_list"),
     path("catalogue/create/", views.BrandCreateView.as_view(), name="brand_create"),
     path("catalogue/<slug:brand_slug>/edit/", views.BrandUpdateView.as_view(), name="brand_edit"),
     path("catalogue/<slug:brand_slug>/delete/", views.BrandDeleteView.as_view(), name="brand_delete"),
-    path("catalogue/<slug:brand_slug>/", views.brand_detail, name="brand_detail"),
+    path("catalogue/<slug:brand_slug>/", views.BrandDetailView.as_view(), name="brand_detail"),
 ]
 
 urlpatterns = [
