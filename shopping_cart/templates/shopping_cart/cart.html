@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load catalog_extras %}
 {% block title %}Cart • Perfect Home Studio{% endblock %}
 
 {% block content %}
@@ -6,17 +7,82 @@
   <div class="container">
     <div class="page-head">
       <h1>Your Cart</h1>
-      <p class="muted">Items you add will appear here.</p>
+      <p class="muted">Review your items and proceed to checkout.</p>
     </div>
 
-    <div class="empty-state">
-      <div class="empty-icon">🛒</div>
-      <h3>Your cart is empty</h3>
-      <p class="muted">Browse products and add them to your cart.</p>
-      <div class="actions">
-        <a class="btn btn-primary" href="/catalogue/">Go to Catalogue</a>
+    {% if items %}
+      <form id="update-cart-form" method="post" action="{% url 'cart_update' %}">
+        {% csrf_token %}
+        <div class="empty" style="padding:0">
+          <table style="width:100%; border-collapse: collapse;">
+            <thead>
+              <tr style="text-align:left; border-bottom:1px solid rgba(15,23,42,.08)">
+                <th style="padding:14px">Product</th>
+                <th style="padding:14px">Price</th>
+                <th style="padding:14px">Qty</th>
+                <th style="padding:14px; text-align:right">Subtotal</th>
+                <th style="padding:14px"></th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for it in items %}
+              <tr style="border-bottom:1px solid rgba(15,23,42,.06)">
+                <td style="padding:14px">
+                  <a href="{{ it.product.get_absolute_url }}" class="card-link">
+                    {{ it.product.title }}
+                  </a>
+                  <div class="muted">SKU: {{ it.product.unique_id }}</div>
+                </td>
+                <td style="padding:14px">{{ it.price|currency }}</td>
+                <td style="padding:14px">
+                  <input type="number" name="qty-{{ it.product.id }}" value="{{ it.qty }}" min="0" max="100" style="width:80px; padding:6px 8px; border:1px solid var(--border); border-radius:8px;">
+                </td>
+                <td style="padding:14px; text-align:right; font-weight:800">{{ it.subtotal|currency }}</td>
+                <td style="padding:14px; text-align:right">
+                  <button class="btn btn-danger btn-sm" type="submit" name="qty-{{ it.product.id }}" value="0">Remove</button>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+            <tfoot>
+              <tr>
+                <td colspan="3" style="padding:14px; text-align:right; font-weight:900">Total:</td>
+                <td style="padding:14px; text-align:right; font-weight:900" class="total-cost-highlight">{{ total|currency }}</td>
+                <td></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </form>
+
+      <form id="clear-cart-form" method="post" action="{% url 'cart_clear' %}" style="display:inline-block; margin-left:8px;">
+        {% csrf_token %}
+      </form>
+
+      <form id="checkout-form" method="post" action="{% url 'cart_checkout' %}" style="display:inline-block; margin-left:8px;">
+        {% csrf_token %}
+      </form>
+
+      <div class="cart-actions" style="margin-top:12px;">
+        <a class="btn btn-ghost" href="{% url 'product_list' %}">Continue Shopping</a>
+
+        <button class="btn btn-primary" type="submit" form="update-cart-form">Update Cart</button>
+
+        <button class="btn btn-danger" type="submit" form="clear-cart-form">Clear Cart</button>
+
+        <button class="btn btn-primary" type="submit" form="checkout-form">Checkout</button>
       </div>
-    </div>
+
+    {% else %}
+      <div class="empty" style="text-align:center; padding:24px;">
+        <div class="empty-icon" style="font-size: 42px;">🛒</div>
+        <h3>Your cart is empty</h3>
+        <p class="muted">Browse products and add them to your cart.</p>
+        <div class="actions">
+          <a class="btn btn-primary" href="{% url 'product_list' %}">Go to Products</a>
+        </div>
+      </div>
+    {% endif %}
   </div>
 </section>
 {% endblock %}

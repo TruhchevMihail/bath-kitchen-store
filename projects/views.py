@@ -1,4 +1,3 @@
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
 from django.views.generic import (
     ListView, DetailView, CreateView, UpdateView, DeleteView
@@ -23,12 +22,29 @@ class ProjectListView(ProjectBaseMixin, ListView):
         valid_sections = [ProjectPost.BATH, ProjectPost.KITCHEN]
 
         if section in valid_sections:
-            return qs.filter(section=section)
-        return qs
+            qs = qs.filter(section=section)
+
+        q = (self.request.GET.get('q') or '').strip()
+        if q:
+            if len(q) < 2:
+                qs = qs.none()
+            else:
+                qs = qs.filter(title__icontains=q)
+
+        sort = self.request.GET.get('sort', '-created_at')
+        valid_sorts = {
+            'newest': '-created_at',
+            'oldest': 'created_at',
+            'title': 'title',
+            '-title': '-title',
+        }
+        db_sort = valid_sorts.get(sort, '-created_at')
+        return qs.order_by(db_sort)
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         ctx["current_section"] = self.request.GET.get("section")
+        ctx['current_sort'] = self.request.GET.get('sort', 'newest')
         return ctx
 
 
@@ -36,12 +52,12 @@ class ProjectDetailView(ProjectBaseMixin, DetailView):
     template_name = "projects/project_detail.html"
 
 
-class ProjectCreateView(LoginRequiredMixin, ProjectBaseMixin, CreateView):
+class ProjectCreateView(ProjectBaseMixin, CreateView):
     form_class = ProjectPostCreateForm
     template_name = "projects/project_create.html"
 
 
-class ProjectUpdateView(LoginRequiredMixin, ProjectBaseMixin, UpdateView):
+class ProjectUpdateView(ProjectBaseMixin, UpdateView):
     form_class = ProjectPostUpdateForm
     template_name = "projects/project_edit.html"
 
@@ -51,8 +67,7 @@ class ProjectUpdateView(LoginRequiredMixin, ProjectBaseMixin, UpdateView):
         return initial
 
 
-class ProjectDeleteView(LoginRequiredMixin, ProjectBaseMixin, DeleteView):
+class ProjectDeleteView(ProjectBaseMixin, DeleteView):
     template_name = "projects/project_delete.html"
     success_url = reverse_lazy("projects:projects_list")
-
 

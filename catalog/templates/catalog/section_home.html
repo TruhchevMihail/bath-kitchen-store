@@ -1,32 +1,56 @@
 {% extends 'base.html' %}
+{% load catalog_extras %}
 {% block title %}{{ title }} • Perfect Home Studio{% endblock %}
 
 {% block content %}
 <section class="page">
   <div class="container">
     <div class="page-head">
-      <h1>{{ title }}</h1>
-      <p class="muted">{{ subtitle }}</p>
+      <div>
+        <h1>{{ title }}</h1>
+        <p class="muted">
+          {% if section == 'bath' %}
+            Transform your bathroom into an oasis of tranquility and style with our premium selection.
+          {% else %}
+            Design and functionality for the heart of your home – discover the perfect kitchen.
+          {% endif %}
+        </p>
+      </div>
+
+      {% if user.is_staff %}
+        <div class="page-actions">
+          <a class="btn btn-primary" href="{% url 'category_create' %}">Create category</a>
+        </div>
+      {% endif %}
     </div>
 
     <div class="grid grid-3">
       {% for c in categories %}
-        <a class="card card-link"
-           href="{% if section == 'bath' %}{% url 'bath_category' c.slug %}{% else %}{% url 'kitchen_category' c.slug %}{% endif %}">
-          <div class="card-media">
-            {% if c.category_image %}
-              <img src="{{ c.category_image.url }}" alt="{{ c.title }}">
-            {% else %}
-              <div class="media-placeholder">Category</div>
-            {% endif %}
-          </div>
-          <div class="card-body">
-            <div class="card-title">{{ c.title }}</div>
+        <div class="card card-link category-card">
+          {% if user.is_staff %}
+            <div class="card-crud">
+              <a class="btn btn-sm btn-ghost" href="{% url 'category_edit' c.slug %}">Edit</a>
+              <a class="btn btn-sm btn-danger" href="{% url 'category_delete' c.slug %}">Delete</a>
+            </div>
+          {% endif %}
+
+          <a class="category-link"
+             href="{% if section == 'bath' %}{% url 'bath_category' c.slug %}{% else %}{% url 'kitchen_category' c.slug %}{% endif %}">
+            <div class="card-media">
+              {% if c.category_image %}
+                <img src="{{ c.category_image.url }}" alt="{{ c.title }}">
+              {% else %}
+                <div class="media-placeholder">Category</div>
+              {% endif %}
+            </div>
+            <div class="card-body">
+              <div class="card-title">{{ c.title }}</div>
               <div class="brand-count muted">
                 {{ c.products.count }} products
+              </div>
             </div>
-          </div>
-        </a>
+          </a>
+        </div>
       {% empty %}
         <div class="empty">
           <h3>No categories yet</h3>
@@ -34,6 +58,73 @@
         </div>
       {% endfor %}
     </div>
+
+    <div class="pillbar-wrapper">
+      <div class="sort-controls" style="display: flex; gap: 10px; align-items: center;">
+        <form method="get" class="inline-search">
+          <input type="text" name="q" value="{{ request.GET.q|default:'' }}"
+                 placeholder="Search products..." class="inline-search-input">
+          <button type="submit" class="inline-search-button">🔍</button>
+          {% for key, value in request.GET.items %}
+            {% if key != 'q' and key != 'page' %}
+              <input type="hidden" name="{{ key }}" value="{{ value }}">
+            {% endif %}
+          {% endfor %}
+        </form>
+
+        <span class="muted" style="font-size: 13px; font-weight: 800;">Sort by:</span>
+        <select class="sort-select" onchange="location.href='?{% param_replace sort='REPLACE_ME' %}'.replace('REPLACE_ME', this.value)">
+          <option value="newest" {% if current_sort == 'newest' %}selected{% endif %}>Newest</option>
+          <option value="oldest" {% if current_sort == 'oldest' %}selected{% endif %}>Oldest</option>
+          <option value="price" {% if current_sort == 'price' %}selected{% endif %}>Price: Low to High</option>
+          <option value="-price" {% if current_sort == '-price' %}selected{% endif %}>Price: High to Low</option>
+          <option value="title" {% if current_sort == 'title' %}selected{% endif %}>Title: A-Z</option>
+          <option value="-title" {% if current_sort == '-title' %}selected{% endif %}>Title: Z-A</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="product-grid">
+      {% for p in products %}
+        <div class="product-card">
+          <div class="product-badges">
+            {% if p.is_promo %}<span class="badge">Promo</span>{% endif %}
+            {% if p.is_featured %}<span class="badge badge-soft">Featured</span>{% endif %}
+          </div>
+
+          <a class="product-link" href="{% url 'product_detail' p.slug %}">
+            <div class="product-media">
+              {% if p.image %}
+                <img class="product-img" src="{{ p.image.url }}" alt="{{ p.title }}">
+              {% else %}
+                <div class="media-placeholder">Product</div>
+              {% endif %}
+            </div>
+
+            <div class="product-body">
+              <div class="product-title clamp-2">{{ p.title }}</div>
+              <div class="product-sub muted">{% if p.brand %}{{ p.brand.name }}{% endif %}</div>
+              <div class="product-price">{{ p.price|currency }}</div>
+            </div>
+          </a>
+
+          <div class="product-actions">
+            <form method="post" action="{% url 'cart_add' p.slug %}" onclick="event.stopPropagation();">
+              {% csrf_token %}
+              <input type="hidden" name="qty" value="1">
+              <input type="hidden" name="next" value="{{ request.get_full_path }}">
+              <button class="btn btn-primary btn-sm" type="submit">Add to cart</button>
+            </form>
+          </div>
+        </div>
+      {% empty %}
+        <div class="empty">
+          <h3>No products in this section yet</h3>
+        </div>
+      {% endfor %}
+    </div>
+
+    {% include "partials/_pager.html" %}
   </div>
 </section>
 {% endblock %}

@@ -1,49 +1,106 @@
-<div class="product-grid">
-  {% for p in products %}
-    <div class="product-card">
+{% extends "base.html" %}
+{% load catalog_extras %}
 
-      <div class="product-media">
+{% block content %}
+<section class="page">
+  <div class="container">
 
-        <div class="product-badges">
-          {% if p.is_promo %}
-            <span class="badge">Promo</span>
-          {% endif %}
-          {% if p.is_featured %}
-            <span class="badge badge-soft">Featured</span>
-          {% endif %}
-        </div>
-
-        {% if p.image %}
-          <img src="{{ p.image.url }}" alt="{{ p.title }}">
+    
+    <div class="page-head">
+      <div>
+        <h1>{{ brand.name }}</h1>
+        {% if brand.description %}
+          <p class="muted" style="max-width: 600px; margin-top: 8px; line-height: 1.5;">{{ brand.description }}</p>
         {% else %}
-          <div class="media-placeholder">Product</div>
+          <p class="muted">Explore the exclusive collection of products from {{ brand.name }}.</p>
         {% endif %}
       </div>
 
-      <div class="product-body">
-
-        <div class="product-title clamp-2">
-          {{ p.title }}
-        </div>
-
-        <div class="product-sub muted">
-          {{ p.category.get_section_display }} • {{ p.category.title }}
-        </div>
-
-        <div class="product-price">
-          {{ p.price }}
-        </div>
-
-        <button class="btn btn-primary btn-sm">
-          Add to cart
-        </button>
-
+      <div class="detail-actions">
+        {% if user.is_staff %}
+          <a class="btn btn-primary" href="{% url 'product_create' %}?brand={{ brand.id }}">Add product</a>
+        {% endif %}
+        <a class="btn btn-ghost" href="{% url 'brand_edit' brand.slug %}">
+          Edit
+        </a>
+        <a class="btn btn-danger" href="{% url 'brand_delete' brand.slug %}">
+          Delete
+        </a>
       </div>
     </div>
-  {% empty %}
-    <div class="empty">
-      <h3>No products for this brand yet</h3>
-      <p class="muted">Add products from the admin panel.</p>
+
+    <div class="pillbar-wrapper">
+      <div style="display: flex; gap: 10px; align-items: center;">
+        <div></div>
+        <form method="get" class="inline-search">
+          <input type="text" name="q" value="{{ request.GET.q|default:'' }}"
+                 placeholder="Search products..." class="inline-search-input">
+          <button type="submit" class="inline-search-button">🔍</button>
+          {% for key, value in request.GET.items %}
+            {% if key != 'q' and key != 'page' %}
+              <input type="hidden" name="{{ key }}" value="{{ value }}">
+            {% endif %}
+          {% endfor %}
+        </form>
+      </div>
+      <div class="sort-controls">
+        <span class="muted" style="font-size: 13px; font-weight: 800;">Sort by:</span>
+        <select class="sort-select" onchange="location.href='?{% param_replace sort='REPLACE_ME' %}'.replace('REPLACE_ME', this.value)">
+          <option value="newest" {% if current_sort == 'newest' %}selected{% endif %}>Newest</option>
+          <option value="oldest" {% if current_sort == 'oldest' %}selected{% endif %}>Oldest</option>
+          <option value="price" {% if current_sort == 'price' %}selected{% endif %}>Price: Low to High</option>
+          <option value="-price" {% if current_sort == '-price' %}selected{% endif %}>Price: High to Low</option>
+          <option value="title" {% if current_sort == 'title' %}selected{% endif %}>Title: A-Z</option>
+          <option value="-title" {% if current_sort == '-title' %}selected{% endif %}>Title: Z-A</option>
+        </select>
+      </div>
     </div>
-  {% endfor %}
-</div>
+
+    
+    <div class="product-grid">
+      {% for p in products %}
+        <div class="product-card">
+
+          <a class="product-link" href="{% url 'product_detail' p.slug %}">
+            <div class="product-media">
+              {% if p.image %}
+                <img class="product-img" src="{{ p.image.url }}" alt="{{ p }}">
+              {% else %}
+                <div class="media-placeholder">No Image</div>
+              {% endif %}
+            </div>
+
+            <div class="product-body">
+              <div class="product-title clamp-2">{{ p }}</div>
+
+              <div class="product-sub muted">
+                {% if p.brand %}{{ p.brand.name }}{% endif %}
+              </div>
+
+              <div class="product-price">{{ p.price|currency }}</div>
+            </div>
+          </a>
+
+          <div class="product-actions">
+            <form method="post" action="{% url 'cart_add' p.slug %}" onclick="event.stopPropagation();">
+              {% csrf_token %}
+              <input type="hidden" name="qty" value="1">
+              <input type="hidden" name="next" value="{{ request.get_full_path }}">
+              <button class="btn btn-primary btn-sm" type="submit">Add to cart</button>
+            </form>
+          </div>
+
+        </div>
+      {% empty %}
+        <div class="empty">
+          <h3>No products for this brand yet</h3>
+        </div>
+      {% endfor %}
+    </div>
+
+    
+    {% include "partials/_pager.html" %}
+
+  </div>
+</section>
+{% endblock %}

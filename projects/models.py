@@ -56,7 +56,7 @@ class ProjectPost(models.Model):
         return sum(p.price for p in self.related_products.all())
 
     def get_absolute_url(self):
-        return reverse('project:project_detail', kwargs={'slug': self.slug})
+        return reverse('projects:project_detail', kwargs={'slug': self.slug})
 
     class Meta:
         ordering = (
@@ -70,4 +70,3 @@ class ProjectPost(models.Model):
 
     def __str__(self):
         return self.title
-

@@ -1,5 +1,6 @@
 from django.core.validators import MinValueValidator, MaxValueValidator, FileExtensionValidator
 from django.db import models
+from django.urls import reverse
 from django.utils.text import slugify
 
 from core.validators.validate_file_size_15mb import validate_file_size_15mb
@@ -24,6 +25,9 @@ class Brand(models.Model):
             FileExtensionValidator(allowed_extensions=["jpg", "jpeg", "png", "webp"]),
         ],
     )
+
+    def get_absolute_url(self):
+        return reverse("brand_detail", kwargs={"brand_slug": self.slug})
 
     class Meta:
         ordering = ('name',)
@@ -71,6 +75,11 @@ class Category(models.Model):
             FileExtensionValidator(allowed_extensions=["jpg", "jpeg", "png", "webp"]),
         ],
     )
+
+
+
+    def get_absolute_url(self):
+        return reverse("category_detail", kwargs={"slug": self.slug})
 
     class Meta:
         ordering = (
@@ -153,13 +162,15 @@ class Product(models.Model):
     )
 
     sold_count = models.PositiveIntegerField(
-        default=0, #Will help with top products at the home page
+        default=0, 
     )
 
     created_at = models.DateTimeField(
-        auto_now_add=True, #Will help with the newest products at the home page
+        auto_now_add=True, 
     )
 
+    def get_absolute_url(self):
+        return reverse("product_detail", kwargs={"slug": self.slug})
 
     class Meta:
         ordering = (
@@ -168,8 +179,11 @@ class Product(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = slugify(self.title)
-        super().save(*args , **kwargs)
+            base = slugify(str(self))
+            super().save(*args, **kwargs)
+            self.slug = f"{base}-{self.pk}"
+            return super().save(update_fields=["slug"])
+        return super().save(*args, **kwargs)
 
     def __str__(self):
         return self.title

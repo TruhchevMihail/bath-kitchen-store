@@ -23,4 +23,3 @@ class ProductAdmin(admin.ModelAdmin):
     list_filter = ("category__section", "brand", "category")
     search_fields = ("title", "slug", "brand__name", "category__title")
     prepopulated_fields = {"slug": ("title",)}
-

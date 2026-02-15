@@ -10,15 +10,16 @@
     <link rel="icon" type="image/png" href="{% static 'images/logo-bath-kitchen.png' %}">
 
 </head>
-<body>
+<body class="layout">
 
   {% include 'partials/_navbar.html' %}
 
-  <main>
+  <main class="main">
     {% block content %}{% endblock %}
   </main>
 
   {% include 'partials/_footer.html' %}
+
 
 </body>
 </html>

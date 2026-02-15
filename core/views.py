@@ -13,3 +13,11 @@ def home(request):
         "best_sellers": best_sellers,
         "latest_products": latest_products,
     })
+
+
+def support(request):
+    return render(request, "core/support.html")
+
+
+def page_not_found(request, exception):
+    return render(request, '404.html', status=404)

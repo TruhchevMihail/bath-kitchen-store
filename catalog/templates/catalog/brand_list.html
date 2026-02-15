@@ -1,17 +1,43 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
+{% load catalog_extras %}
 {% block title %}Brands • Perfect Home Studio{% endblock %}
 
 {% block content %}
 <section class="page">
   <div class="container">
+
+    
     <div class="page-head">
-      <h1>Catalogue</h1>
-      <p class="muted">Browse all brands</p>
+      <div>
+        <h1>Brands</h1>
+        <p class="muted">A curated collection from world leaders in interior design.</p>
+      </div>
+
+      {% if user.is_staff %}
+        <div class="page-actions">
+          <a class="btn btn-primary" href="{% url 'brand_create' %}">Create brand</a>
+        </div>
+      {% endif %}
     </div>
 
+    <div class="pillbar-wrapper">
+      <div></div> 
+      <div class="sort-controls">
+        <span class="muted" style="font-size: 13px; font-weight: 800;">Sort by:</span>
+        <select class="sort-select" onchange="location.href='?{% param_replace sort='REPLACE_ME' %}'.replace('REPLACE_ME', this.value)">
+          <option value="name" {% if current_sort == 'name' %}selected{% endif %}>Name: A-Z</option>
+          <option value="-name" {% if current_sort == '-name' %}selected{% endif %}>Name: Z-A</option>
+          <option value="newest" {% if current_sort == 'newest' %}selected{% endif %}>Newest</option>
+          <option value="oldest" {% if current_sort == 'oldest' %}selected{% endif %}>Oldest</option>
+        </select>
+      </div>
+    </div>
+
+    
     <div class="grid grid-4">
       {% for b in brands %}
         <a class="card card-link" href="{% url 'brand_detail' b.slug %}">
+
           <div class="card-media card-media--brand">
             {% if b.logo %}
               <img src="{{ b.logo.url }}" alt="{{ b.name }}">
@@ -19,20 +45,28 @@
               <div class="media-placeholder">Brand</div>
             {% endif %}
           </div>
+
           <div class="card-body brand-card-body">
             <div class="card-title brand-title">{{ b.name }}</div>
             <div class="brand-count muted">
-                {{ b.products.count }} products
+              {{ b.products.count }} products
             </div>
           </div>
+
         </a>
       {% empty %}
-        <div class="empty">
-          <h3>No brands yet</h3>
-          <p class="muted">Add brands from the admin panel.</p>
+        <div class="container">
+          <div class="empty">
+            <h3>No brands yet</h3>
+            <p class="muted">Create your first brand.</p>
+          </div>
         </div>
       {% endfor %}
     </div>
+
+    
+    {% include "partials/_pager.html" %}
+
   </div>
 </section>
 {% endblock %}

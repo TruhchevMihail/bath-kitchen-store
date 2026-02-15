@@ -1,3 +1,1 @@
-from django.contrib import admin
-
-# Register your models here.
+# no admin models for shopping_cart (session-based cart)

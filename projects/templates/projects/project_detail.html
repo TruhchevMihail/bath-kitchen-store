@@ -1,41 +1,100 @@
 {% extends "base.html" %}
+{% load catalog_extras %}
 {% block title %}{{ project.title }}{% endblock %}
 
 {% block content %}
-<div class="container">
-  <h1>{{ project.title }}</h1>
-  <p class="badge">{{ project.get_section_display }}</p>
-  <p>{{ project.excerpt }}</p>
+<section class="page">
+  <div class="container">
 
-  {% if project.cover_image_url %}
-    <img src="{{ project.cover_image_url }}" alt="{{ project.title }}" style="width:100%; max-height:360px; object-fit:cover; border-radius:14px;">
-  {% endif %}
+    <div class="page-head">
+      <div>
+        <div class="breadcrumbs">
+          <a href="{% url 'projects:projects_list' %}">Projects</a> /
+          <span class="muted">{{ project.get_section_display }}</span>
+        </div>
+        <h1>{{ project.title }}</h1>
+        <p class="muted">{{ project.excerpt }}</p>
+      </div>
 
-  <div class="content">
-    {{ project.content|linebreaks }}
-  </div>
+      <div class="detail-actions">
+        {% if user.is_staff %}
+          <a class="btn btn-primary" href="{% url 'projects:project_edit' project.slug %}">Edit</a>
+          <a class="btn btn-danger" href="{% url 'projects:project_delete' project.slug %}">Delete</a>
+        {% endif %}
+        <a class="btn btn-ghost" href="{% url 'projects:projects_list' %}">Back</a>
+      </div>
+    </div>
 
-  <h2>Related products</h2>
-  <p>Total: {{ project.total_price }}</p>
+    <div class="project-detail-layout">
+      <div class="project-content-area">
+        {% if project.cover_image %}
+          <div class="project-cover">
+            <img src="{{ project.cover_image.url }}" alt="{{ project.title }}">
+          </div>
+        {% endif %}
 
-  <div class="product-grid">
-    {% for p in project.related_products.all %}
-      <div class="product-card">
-        <div class="product-title">{{ p.title }}</div>
-        <div class="product-meta">
-          <span class="badge">{{ p.brand.name }}</span>
-          <span class="price">{{ p.price }}</span>
+        <div class="project-content card" style="margin-top: 24px;">
+          <div class="content">
+            {{ project.content|linebreaks }}
+          </div>
         </div>
       </div>
-    {% empty %}
-      <p>No related products yet.</p>
-    {% endfor %}
-  </div>
 
-  <div style="margin-top:16px; display:flex; gap:10px;">
-    <a class="btn btn-primary" href="{% url 'projects:project_edit' project.slug %}">Edit</a>
-    <a class="btn btn-danger" href="{% url 'projects:project_delete' project.slug %}">Delete</a>
-    <a class="btn btn-ghost" href="{% url 'projects:projects_list' %}">Back</a>
+      <div class="project-sidebar">
+        <div class="card">
+          <h3 class="card-title">Project Info</h3>
+          <p class="muted">Section: <strong>{{ project.get_section_display }}</strong></p>
+          <p class="muted">Added on: {{ project.created_at|date:"d M Y" }}</p>
+          <hr style="opacity: 0.1; margin: 15px 0;">
+          <div class="total-cost-highlight" style="font-size: 1.2rem;">
+            Total Project Cost:<br>
+            {{ project.total_price|currency }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-head" style="margin-top: 40px; text-align: left;">
+      <h2 class="section-title" style="text-align: left; margin-left: 0;">Related products</h2>
+      <p class="muted">Products used in this project • Total cost: <span class="price">{{ project.total_price|currency }}</span></p>
+    </div>
+
+    <div class="product-grid five">
+      {% for p in project.related_products.all %}
+        <div class="product-card">
+          <a class="product-link" href="{% url 'product_detail' p.slug %}">
+            <div class="product-media">
+              {% if p.image %}
+                <img class="product-img" src="{{ p.image.url }}" alt="{{ p.title }}">
+              {% else %}
+                <div class="media-placeholder">No Image</div>
+              {% endif %}
+            </div>
+
+            <div class="product-body">
+              <div class="product-title clamp-2">{{ p.title }}</div>
+              <div class="product-sub muted">
+                {% if p.brand %}{{ p.brand.name }}{% endif %}
+              </div>
+              <div class="product-price">{{ p.price|currency }}</div>
+            </div>
+          </a>
+          <div class="product-actions">
+            <form method="post" action="{% url 'cart_add' p.slug %}" onclick="event.stopPropagation();">
+              {% csrf_token %}
+              <input type="hidden" name="qty" value="1">
+              <input type="hidden" name="next" value="{{ request.get_full_path }}">
+              <button class="btn btn-primary btn-sm" type="submit">Add to cart</button>
+            </form>
+          </div>
+        </div>
+      {% empty %}
+        <div class="empty">
+          <p class="muted">No related products yet.</p>
+        </div>
+      {% endfor %}
+    </div>
+
   </div>
-</div>
+</section>
 {% endblock %}

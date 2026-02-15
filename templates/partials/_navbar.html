@@ -1,4 +1,5 @@
 {% load static %}
+{% load catalog_extras %}
 
 <header class="site-header">
   <div class="header-inner">
@@ -8,18 +9,57 @@
         <a class="menu-link" href="/">Home</a>
         <a class="menu-link" href="{% url 'bath_home' %}">Bath</a>
         <a class="menu-link" href="{% url 'kitchen_home' %}">Kitchen</a>
-        <a class="menu-link" href="{% url 'brand_list' %}">Catalogue</a>
+        <a class="menu-link" href="{% url 'product_list' %}">All Products</a>
+        <a class="menu-link" href="{% url 'brand_list' %}">Brands</a>
         <a class="menu-link" href="{% url 'projects:projects_list' %}">Projects</a>
     </nav>
 
-    <a class="cart" href="/cart/" aria-label="Cart">
-      <span class="cart-icon">🛒</span>
-      <span class="cart-badge">0</span>
-    </a>
+    <div class="cart mini-cart" aria-label="Cart">
+      <a class="cart-link" href="/cart/">
+        <span class="cart-icon">🛒</span>
+        <span class="cart-badge">{{ cart_count|default:0 }}</span>
+      </a>
+      <div class="mini-cart-panel">
+        {% if cart_preview_items %}
+          <div class="mini-cart-list">
+            {% for it in cart_preview_items %}
+              <a class="mini-cart-item" href="{{ it.product.get_absolute_url }}">
+                <div class="mini-cart-thumb">
+                  {% if it.product.image %}
+                    <img src="{{ it.product.image.url }}" alt="{{ it.product.title }}">
+                  {% else %}
+                    <div class="media-placeholder">No Image</div>
+                  {% endif %}
+                </div>
+                <div class="mini-cart-info">
+                  <div class="mini-cart-title">{{ it.product.title }}</div>
+                  <div class="mini-cart-meta">x{{ it.qty }} • {{ it.subtotal|currency }}</div>
+                </div>
+              </a>
+            {% endfor %}
+          </div>
+          <div class="mini-cart-total">
+            <span>Total:</span>
+            <strong>{{ cart_preview_total|currency }}</strong>
+          </div>
+        {% else %}
+          <div class="mini-cart-empty muted">Your cart is empty.</div>
+        {% endif %}
+      </div>
+    </div>
 
-    <form class="search" role="search" action="search" method="get">
-      <input class="search-input" type="search" name="q" placeholder="Search..." aria-label="Search">
-      <button class="search-btn" type="submit">Search</button>
+    <form class="search" method="get" action="{% url 'product_list' %}">
+      <input
+        class="search-input"
+        type="text"
+        name="q"
+        placeholder="Search products"
+        value="{{ request.GET.q }}"
+        minlength="2"
+        required
+      >
+      <button class='search-btn' type="submit">Search</button>
     </form>
+
   </div>
 </header>

@@ -1,3 +1,3 @@
 from django.db import models
 
-# Create your models here.
+# shopping_cart uses session-only storage now; no DB models required.
