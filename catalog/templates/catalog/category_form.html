@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="page">
+  <div class="container">
+
+    <div class="page-head">
+      <h1>{% if object %}Edit category{% else %}Create category{% endif %}</h1>
+      <p class="muted">Choose section (Bath/Kitchen) carefully.</p>
+    </div>
+
+    <div class="card">
+      <form method="post" enctype="multipart/form-data" class="form">
+        {% csrf_token %}
+        {{ form.as_p }}
+
+        <div class="form-actions">
+          <button class="btn" type="submit">Save</button>
+          <a class="btn btn-ghost" href="{% url 'category_list' %}">Cancel</a>
+        </div>
+      </form>
+    </div>
+
+  </div>
+</section>
+{% endblock %}

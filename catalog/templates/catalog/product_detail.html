@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% load catalog_extras %}
+{% block title %}{{ product.title }}{% endblock %}
+
+{% block content %}
+<div class="page container">
+
+  <div class="product-detail">
+
+    
+    <div class="detail-left">
+      <div class="detail-image">
+        {% if product.image %}
+          <img src="{{ product.image.url }}" alt="{{ product.title }}">
+        {% else %}
+          <div class="media-placeholder">No Image</div>
+        {% endif %}
+      </div>
+
+    </div>
+
+    
+    <div class="detail-right">
+      <h1 class="detail-title">{{ product.title }}</h1>
+
+      {% if product.brand.logo %}
+        <img src="{{ product.brand.logo.url }}" class="detail-brand" alt="{{ product.brand.name }}">
+      {% endif %}
+
+      <div class="detail-price">{{ product.price|currency }}</div>
+
+      <div class="detail-actions">
+        <form method="post" action="{% url 'cart_add' product.slug %}">
+          {% csrf_token %}
+          <input type="hidden" name="next" value="{{ request.path }}">
+          <input type="number" name="qty" value="1" min="1" max="100" style="width:80px; padding:6px 8px; border:1px solid var(--border); border-radius:8px; margin-right:8px;">
+          <button class="btn btn-primary" type="submit">Add to cart</button>
+        </form>
+
+        <a class="btn btn-ghost" href="{% url 'product_edit' product.slug %}">Edit</a>
+        <a class="btn btn-danger" href="{% url 'product_delete' product.slug %}">Delete</a>
+      </div>
+    </div>
+
+    
+    <div class="detail-desc">
+      {% if product.description %}
+        {{ product.description|linebreaks }}
+      {% elif product.short_description %}
+        {{ product.short_description }}
+      {% else %}
+        <p class="muted">No description available.</p>
+      {% endif %}
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}

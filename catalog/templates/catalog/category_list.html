@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="page">
+  <div class="container">
+
+    <div class="page-head">
+      <div>
+        <h1>Categories</h1>
+        <p class="muted">Bath & Kitchen categories</p>
+      </div>
+
+      <a class="btn" href="{% url 'category_create' %}">Create category</a>
+    </div>
+
+    <div class="grid grid-3">
+      {% for c in categories %}
+        <a class="card card-link" href="{% url 'category_detail' c.slug %}">
+          <div class="card-body">
+            <div class="card-title">{{ c.title }}</div>
+            <div class="muted">{{ c.section }}</div>
+            {% if c.description %}
+              <div class="muted">{{ c.description }}</div>
+            {% endif %}
+          </div>
+        </a>
+      {% empty %}
+        <div class="empty">
+          <h3>No categories yet</h3>
+          <p class="muted">Create your first category.</p>
+        </div>
+      {% endfor %}
+    </div>
+
+    {% include "partials/_pager.html" %}
+
+  </div>
+</section>
+{% endblock %}

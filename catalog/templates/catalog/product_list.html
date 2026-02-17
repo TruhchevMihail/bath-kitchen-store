@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+{% load catalog_extras %}
+
+{% block content %}
+<section class="page">
+  <div class="container">
+    <div class="page-head">
+      <div>
+        <h1>Products</h1>
+
+        {% if request.GET.q %}
+          <p class="muted">Search results for: <strong>{{ request.GET.q }}</strong></p>
+        {% else %}
+          <p class="muted">Discover excellence in every detail for your modern home.</p>
+        {% endif %}
+      </div>
+
+      {% if user.is_staff %}
+        <div class="page-actions">
+          <a class="btn btn-primary" href="{% url 'product_create' %}">Create product</a>
+        </div>
+      {% endif %}
+    </div>
+
+    <div class="pillbar-wrapper">
+      <div class="filter-controls" style="display: flex; gap: 10px; align-items: center;">
+        <button class="pill filter-toggle" onclick="document.getElementById('filter-drawer').classList.toggle('is-open')">
+          <span style="font-size: 16px;">🔍</span> Filter
+          {% if current_section or current_category or current_brand %}
+            <span class="cart-badge" style="position: static; margin-left: 5px;">!</span>
+          {% endif %}
+        </button>
+
+        <form method="get" class="inline-search">
+          <input type="text" name="q" value="{{ request.GET.q|default:'' }}"
+                 placeholder="Search products..." class="inline-search-input">
+          <button type="submit" class="inline-search-button">🔍</button>
+          {% for key, value in request.GET.items %}
+            {% if key != 'q' and key != 'page' %}
+              <input type="hidden" name="{{ key }}" value="{{ value }}">
+            {% endif %}
+          {% endfor %}
+        </form>
+
+        <div id="filter-drawer" class="filter-drawer">
+          <div class="filter-group">
+            <label>Section</label>
+            <select onchange="location.href='?{% param_replace section='REPLACE_ME' category=None %}'.replace('REPLACE_ME', this.value)">
+              <option value="">All Sections</option>
+              {% for val, name in sections %}
+                <option value="{{ val }}" {% if current_section == val %}selected{% endif %}>{{ name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label>Category</label>
+            <select onchange="location.href='?{% param_replace category='REPLACE_ME' %}'.replace('REPLACE_ME', this.value)">
+              <option value="">All Categories</option>
+              {% for cat in all_categories %}
+                <option value="{{ cat.id }}" {% if current_category == cat.id|stringformat:"s" %}selected{% endif %}>
+                  {{ cat.title }} {% if not current_section %}({{ cat.get_section_display }}){% endif %}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label>Brand</label>
+            <select onchange="location.href='?{% param_replace brand='REPLACE_ME' %}'.replace('REPLACE_ME', this.value)">
+              <option value="">All Brands</option>
+              {% for b in brands %}
+                <option value="{{ b.id }}" {% if current_brand == b.id|stringformat:"s" %}selected{% endif %}>{{ b.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="filter-actions">
+            <a href="{% url 'product_list' %}" class="btn btn-sm btn-ghost">Reset All</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="sort-controls">
+        <span class="muted" style="font-size: 13px; font-weight: 800;">Sort by:</span>
+        <select class="sort-select" onchange="location.href='?{% param_replace sort='REPLACE_ME' %}'.replace('REPLACE_ME', this.value)">
+          <option value="newest" {% if current_sort == 'newest' %}selected{% endif %}>Newest</option>
+          <option value="oldest" {% if current_sort == 'oldest' %}selected{% endif %}>Oldest</option>
+          <option value="price" {% if current_sort == 'price' %}selected{% endif %}>Price: Low to High</option>
+          <option value="-price" {% if current_sort == '-price' %}selected{% endif %}>Price: High to Low</option>
+          <option value="title" {% if current_sort == 'title' %}selected{% endif %}>Title: A-Z</option>
+          <option value="-title" {% if current_sort == '-title' %}selected{% endif %}>Title: Z-A</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="product-grid">
+      {% for p in products %}
+        <div class="product-card">
+
+          <a class="product-link" href="{% url 'product_detail' p.slug %}">
+            <div class="product-media">
+              {% if p.image %}
+                <img class="product-img" src="{{ p.image.url }}" alt="{{ p }}">
+              {% else %}
+                <div class="media-placeholder">No Image</div>
+              {% endif %}
+            </div>
+
+            <div class="product-body">
+              <div class="product-title clamp-2">{{ p }}</div>
+
+              <div class="product-sub muted">
+                {% if p.brand %}{{ p.brand }}{% else %}No brand{% endif %}
+              </div>
+
+              <div class="product-price">{{ p.price|currency }}</div>
+            </div>
+          </a>
+
+          <div class="product-actions">
+            <form method="post" action="{% url 'cart_add' p.slug %}" onclick="event.stopPropagation();">
+              {% csrf_token %}
+              <input type="hidden" name="qty" value="1">
+              <input type="hidden" name="next" value="{{ request.get_full_path }}">
+              <button class="btn btn-primary btn-sm" type="submit">Add to cart</button>
+            </form>
+          </div>
+
+        </div>
+      {% empty %}
+        <div class="empty">
+          <h3>No products found</h3>
+          <p class="muted">Try a different keyword.</p>
+        </div>
+      {% endfor %}
+    </div>
+
+    {% include "partials/_pager.html" %}
+
+  </div>
+</section>
+{% endblock %}

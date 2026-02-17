@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="page">
+  <div class="container">
+
+    <div class="page-head">
+      <h1>{% if object %}Edit product{% else %}Create product{% endif %}</h1>
+      <p class="muted">
+        {% if object %}
+          Update the product details below.
+        {% else %}
+          Fill in the product information below.
+        {% endif %}
+      </p>
+    </div>
+
+    <div class="card">
+      <form method="post" enctype="multipart/form-data" class="form">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+          <div class="form-errors">
+            {{ form.non_field_errors }}
+          </div>
+        {% endif %}
+
+        {{ form.as_p }}
+
+        <div class="form-actions">
+          <button class="btn" type="submit">Save</button>
+
+          {% if object %}
+            <a class="btn btn-ghost" href="{% url 'product_detail' object.slug %}">Cancel</a>
+          {% else %}
+            <a class="btn btn-ghost" href="{% url 'product_list' %}">Cancel</a>
+          {% endif %}
+        </div>
+      </form>
+    </div>
+
+  </div>
+</section>
+{% endblock %}

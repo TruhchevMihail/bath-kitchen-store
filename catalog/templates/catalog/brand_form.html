@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="page">
+  <div class="container">
+
+    <div class="page-head">
+      <h1>{% if object %}Edit brand{% else %}Create brand{% endif %}</h1>
+      <p class="muted">{% if object %}Update brand details.{% else %}Add a new brand.{% endif %}</p>
+    </div>
+
+    <div class="card">
+      <form method="post" enctype="multipart/form-data" class="form">
+        {% csrf_token %}
+        {{ form.as_p }}
+
+        <div class="form-actions">
+          <button class="btn" type="submit">Save</button>
+          <a class="btn btn-ghost" href="{% url 'brand_list' %}">Cancel</a>
+        </div>
+      </form>
+    </div>
+
+  </div>
+</section>
+{% endblock %}
